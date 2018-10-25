@@ -3,9 +3,9 @@ title: "Wolverine Earnings Analysis - Initial Results"
 author: "Jacob Baier"
 date: "October 25, 2018"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -15,6 +15,9 @@ df_post_earnings <- read_csv("post_earnings_realized_volatility.csv")
 library(gridExtra)
 ```
 
+<!--to knit to pdf install.packages("tinytex")
+    tinytex::install_tinytex()
+    it will take a while-->
 
 ```{r, include=FALSE}
 #massage data to how we wnt to graph it

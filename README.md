@@ -1,1 +1,1 @@
-Git repository containing the Wolverine data analysis project.
+Git repository containing the Wolverine Earnings Analysis project.
