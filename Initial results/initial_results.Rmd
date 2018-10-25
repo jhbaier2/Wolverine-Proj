@@ -1,0 +1,100 @@
+---
+title: "Wolverine Earnings Analysis - Initial Results"
+author: "Jacob Baier"
+date: "October 25, 2018"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+df_post_earnings <- read_csv("post_earnings_realized_volatility.csv")
+library(gridExtra)
+```
+
+
+```{r, include=FALSE}
+#massage data to how we wnt to graph it
+df_post_earnings <-
+  df_post_earnings %>% 
+    filter(expected_move > 0.01)
+
+df_post_earnings <-
+  df_post_earnings %>% 
+    filter(move_ratio > 0.01)
+
+df_post_earnings <-
+  df_post_earnings %>% 
+    mutate(gain_loss = map_chr(actual_move, function(move) if(move < 0) {"loss"} else {"gain"}))
+
+df_post_earnings <-
+  df_post_earnings %>% 
+    mutate(move_ratio_bucket = cut(log(move_ratio), 100, labels = FALSE))
+```
+
+
+```{r,echo=FALSE}
+# define graphs
+# p1 <-
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, gain_loss) %>% 
+  summarize(avg_sd_03_ratio = log(mean(sd_03/expected_move))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_03_ratio, color = gain_loss),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_03_ratio), method = "lm",
+              se = F) +
+  facet_wrap(~ gain_loss, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Weighted S.D. 3",
+       title = "Move Ratio Rank against Weighted Standard Deviations for 3/5/7/10 days")
+
+# p2 <-
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, gain_loss) %>% 
+  summarize(avg_sd_05_ratio = log(mean(sd_05/expected_move))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_05_ratio, color = gain_loss),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_05_ratio), method = "lm",
+              se = F) +
+  facet_wrap(~ gain_loss, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Weighted S.D. 5")
+
+# p3 <-
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, gain_loss) %>% 
+  summarize(avg_sd_07_ratio = log(mean(sd_07/expected_move))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_07_ratio, color = gain_loss),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_07_ratio), method = "lm",
+              se = F) +
+  facet_wrap(~ gain_loss, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Weighted S.D. 7")
+
+# p4 <-
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, gain_loss) %>% 
+  summarize(avg_sd_10_ratio = log(mean(sd_10/expected_move))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_10_ratio, color = gain_loss),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_10_ratio), method = "lm",
+              se = F) +
+  facet_wrap(~ gain_loss, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Weighted S.D 10")
+
+# gridExtra::grid.arrange(p1, p2, p3, p4, ncol = 1)
+```
+
