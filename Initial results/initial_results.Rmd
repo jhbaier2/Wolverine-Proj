@@ -1,13 +1,13 @@
 ---
-title: "Wolverine Earnings Analysis - Initial Results"
+title: "Wolverine Earnings Analysis - Volatility around Earnings"
 author: "Jacob Baier"
-date: "October 25, 2018"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
-
+<!--load packages-->
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
@@ -19,6 +19,7 @@ library(gridExtra)
     tinytex::install_tinytex()
     it will take a while-->
 
+<!--massage data-->
 ```{r, include=FALSE}
 #massage data to how we wnt to graph it
 df_post_earnings <-
@@ -38,8 +39,68 @@ df_post_earnings <-
     mutate(move_ratio_bucket = cut(log(move_ratio), 100, labels = FALSE))
 ```
 
+<!-- descibe weighted sd better-->
 
-```{r,echo=FALSE}
+##Volatility and Earnings  
+
+This is an analysis of equity volatility around earnings reports.  In particular, we will address the following questions:  
+
+1.	If the actual move after an earnings report is greater than or less than the market-implied expected move, what does this predict for realized volatility after the earnings report.
+1.  Is relationship #1 different when the actual move is a gain vs. loss.
+1.  Is the relationship in #1 different when stock price performance has been positive or negative in the run-up to the earnings report.
+1.  Is the relationship in #1 different when realized volatility has been high or low (relative to implied volatility) in the run-up to the earnings report?  
+
+####**Data & Methodology**
+
+
+
+####**Move-Ratio vs Subsequent Realized Volatility**
+
+
+
+```{r, echo = FALSE}
+#noisy sd 20 vs move ratio
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, gain_loss) %>% 
+  summarize(avg_sd_20_ratio = log(mean(sd_20))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_20_ratio, color = gain_loss)) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, 
+                            y = avg_sd_20_ratio), method = "lm",
+              se = F)
+
+df_post_earnings %>% 
+  group_by(expected_move, gain_loss) %>% 
+  summarize(avg_sd_20_ratio = log(mean(sd_20))
+            ,num_obs = n()) %>%
+  ggplot()+ geom_point(mapping= aes(
+    x = log(df_post_earnings$expected_move), y = avg_sd_20_ratio, color = gain_loss
+  ))#+
+  # geom_smooth(mapping = aes(move_ratio))
+  
+```
+
+####**Gains vs Loss**
+
+####**Positive and Negative Stock Performce Before Earnings**
+
+*section placeholder*
+
+####**Price Volatility Before Earnings**
+
+*section placeholder*
+
+####**Next Steps**
+
+For the most part, this analysis simply reveals the well-known phenomenon of volatility clustering - high volatility begets high volatility.  However, our analysis isolates this around earnings dates, and also normalizes the notion of high volatility by market implied volatility.  It is also worth noting that the correlation more positive for loss vs. gain. Meaning large downward jumps are more strongly correlated with further losses.  
+  
+For further analysis, we would like to compare the current, and future, results against non-earnings data (a control group). Doing so will let us see that our findings do not hold outside of earnings and are indeed a result of the earnings release. Specifically, expected and actual move for non and earnings dates this will give us a baseline for what a pronounced or larger-than-normal jump is.  
+  
+If possible, would you be able to send us non-earnings options data, so that we can analyze a control group and provide more thorough results?
+
+```{r,echo=FALSE, include=FALSE}
 # define graphs
 # p1 <-
 df_post_earnings %>% 
@@ -53,8 +114,8 @@ df_post_earnings %>%
   geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_03_ratio), method = "lm",
               se = F) +
   facet_wrap(~ gain_loss, ncol = 1)+
-  labs(x = "Move Ratio Rank", y = "Weighted S.D. 3",
-       title = "Move Ratio Rank against Weighted Standard Deviations for 3/5/7/10 days")
+  labs(x = "Move Ratio Rank", y = "Average S.D. 3",
+       title = "Move Ratio Rank against Average Standard Deviations for 3/5/7/10 days")
 
 # p2 <-
 df_post_earnings %>% 
@@ -68,7 +129,7 @@ df_post_earnings %>%
   geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_05_ratio), method = "lm",
               se = F) +
   facet_wrap(~ gain_loss, ncol = 1)+
-  labs(x = "Move Ratio Rank", y = "Weighted S.D. 5")
+  labs(x = "Move Ratio Rank", y = "Average S.D. 5")
 
 # p3 <-
 df_post_earnings %>% 
@@ -82,7 +143,7 @@ df_post_earnings %>%
   geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_07_ratio), method = "lm",
               se = F) +
   facet_wrap(~ gain_loss, ncol = 1)+
-  labs(x = "Move Ratio Rank", y = "Weighted S.D. 7")
+  labs(x = "Move Ratio Rank", y = "Average S.D. 7")
 
 # p4 <-
 df_post_earnings %>% 
@@ -96,7 +157,7 @@ df_post_earnings %>%
   geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_10_ratio), method = "lm",
               se = F) +
   facet_wrap(~ gain_loss, ncol = 1)+
-  labs(x = "Move Ratio Rank", y = "Weighted S.D 10")
+  labs(x = "Move Ratio Rank", y = "Average S.D 10")
 
 # gridExtra::grid.arrange(p1, p2, p3, p4, ncol = 1)
 ```
