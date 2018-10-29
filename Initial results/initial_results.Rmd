@@ -51,35 +51,59 @@ This is an analysis of equity volatility around earnings reports.  In particular
 1.  Is the relationship in #1 different when realized volatility has been high or low (relative to implied volatility) in the run-up to the earnings report?  
 
 ####**Data & Methodology**
-
+<!--data: how we cleaned it up
+method: sd 3 and -3, etc. returns 3, etc define all of them, move ratio too-->
 
 
 ####**Move-Ratio vs Subsequent Realized Volatility**
 
-
+The following graph represents the "raw" data graphed at face value.
+Specifically, it is the expected move graphed against the 10 day standard deviations (SD 10).
+In order to make the graph more readable, however, each axis is scaled with a logarithm.
+As you can see the data is widely distributed in the y direction, and to a lesser extent in the x. This is in part due to the differing underlying prices that naturally have a large effect on the calculated standard deviations. Expected move varies to a lesser degree given that this is already a measure of SD. 
+Having such a wide distribution will make it difficult to discern any concrete meaning from a graph given the amount of noise; this example is no exception. At first glance it is easy to see that there is indeed a positive correlation between the two. However, we cannot draw any conlcusions on if it is truely a correlation or a result of the noise.  
 
 ```{r, echo = FALSE}
 #noisy sd 20 vs move ratio
+# df_post_earnings %>% 
+#   group_by(move_ratio_bucket, gain_loss) %>% 
+#   summarize(avg_sd_20_ratio = (mean(sd_20/expected_move))
+#             ,num_obs = n()) %>% 
+#   filter(num_obs > 50) %>% 
+#   ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+#                                       y = avg_sd_20_ratio, color = gain_loss)) +
+#   geom_smooth(mapping = aes(x = move_ratio_bucket, 
+#                             y = avg_sd_20_ratio), method = "lm",
+#               se = F)
+
+  # graph move ratio vs SD/expected, log() possibly
+df_post_earnings %>% 
+  ggplot() + geom_point(mapping = aes(
+    y = log(sd_10), x = log(expected_move)  
+    ))+
+  geom_smooth(mapping = aes(
+    x = log(expected_move), y = log(sd_10)
+    ), method = "lm")+
+  labs(y = "SD 10", x = "Expected Move", title = "Expected Move against 10 Day SD")
+```
+
+
+
+```{r, echo = FALSE}
+# cleaned up SD 7 vs ratio, without gain vs loss
 df_post_earnings %>% 
   group_by(move_ratio_bucket, gain_loss) %>% 
-  summarize(avg_sd_20_ratio = log(mean(sd_20))
+  summarize(avg_sd_05_ratio = log(mean(sd_05/expected_move))
             ,num_obs = n()) %>% 
   filter(num_obs > 50) %>% 
   ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
-                                      y = avg_sd_20_ratio, color = gain_loss)) +
-  geom_smooth(mapping = aes(x = move_ratio_bucket, 
-                            y = avg_sd_20_ratio), method = "lm",
-              se = F)
-
-df_post_earnings %>% 
-  group_by(expected_move, gain_loss) %>% 
-  summarize(avg_sd_20_ratio = log(mean(sd_20))
-            ,num_obs = n()) %>%
-  ggplot()+ geom_point(mapping= aes(
-    x = log(df_post_earnings$expected_move), y = avg_sd_20_ratio, color = gain_loss
-  ))#+
-  # geom_smooth(mapping = aes(move_ratio))
-  
+                                      y = avg_sd_05_ratio),# color = gain_loss),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_05_ratio), method = "lm",
+              se = F) +
+  # facet_wrap(~ gain_loss, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. 5",
+       title = "Move Ratio Rank against Average Standard 5 Day Deviation")
 ```
 
 ####**Gains vs Loss**
