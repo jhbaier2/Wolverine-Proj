@@ -3,9 +3,9 @@ title: "Wolverine Earnings Analysis - Volatility Around Earnings"
 author: "Jacob Baier"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 header-includes:
   - \setlength{\parindent}{4em}
 ---
@@ -14,7 +14,7 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 df_post_earnings <- read_csv("post_earnings_realized_volatility.csv")
-library(gridExtra)
+# library(gridExtra)
 ```
 
 <!--to knit to pdf install.packages("tinytex")
@@ -57,13 +57,20 @@ This is an analysis of equity volatility around earnings reports.  In particular
 method: sd 3 and -3, etc. returns 3, etc define all of them, move ratio too
 list and define these-->
 
+The data in question consists of daily returns for a number of stocks from late 2015 to mid August 2018. This is in addition to data on earnings days for the same stocks. Specifically, aside from date, there is actual returns for that day and the expected standard deviation (move) for those returns.
+To make the data usable we removed all of the missing data and limited it to Quarter 2, 2018 and earlier, as mentioned previously. 
+*Term Definitions* below details the values we calculated and leveraged in our analysis.  
+  
 Term Definitions:  
   
-1. **Move Ratio:**
+* **Move Ratio:**  
+To calculate move ratio we first removed the direction of change for each stock on a corresponding earnings day. We then simply divided by the expected move for that earnings day. This allowed us to both have a comparable measure regardless of stock and a comparison between the stocks' actual perfomance vs expected performance.
   
-1. **SD #:**
+* **SD #:**  
+SD in this analysis is simply short for standard deviation. We calculated 8 different SD metrics which we are using as measures of realized volatility. Specifically, our 8 SDs correspond to 4 different time windows both before and after the earnings date. That is, 3, 5, 7, and 10 days leading up to and after earnings. For reference, we are using negative days to refer to the lead up. So, SD 3 would be the standard deviation for the three days after earnings and SD -3 would be the same but for the three days leading up to earnings.  
   
-1. **Return #:**
+* **Return #:**  
+Return for our purposes are the stock movement over a number of days as compared to earnings days. In this case we used the same time intervals as SD, but only for the lead up to earnings instead of both (-3/-5/-7/-10). So Return -3, as we are calling it, would be the the stock movement for 3 days leading up to and earnings day. 
 
 ####**Move-Ratio vs Subsequent Realized Volatility**
 
@@ -101,7 +108,7 @@ The next graph is the result of "cleaning up" the graphed data and the sacles of
   
 On the y axis the standard deviation is also scaled using expected move, in order to create an equivalent scaled on both axes. We also applied a logarithm as stated before in addition to averaging on the "vertical lines" mentioned in the previous paragraph. By averaging these lines it allowed up to display only the center point of each line. 
    
-Finally, what we are left with is a graph with the noise removed. In addition, we can definitively say that there is a positive correlation between the move ratio and the standard deviation. The other three SD measures (3/7/10) are displayed in the appendix as each shows the same relationship. In short, this graph details the fact that, yes a large move or "jump" will be followed by continued jumps. 
+Finally, what we are left with is a graph with the noise removed. In addition, we can definitively say that there is a positive correlation between the move ratio and the standard deviation. The other three SD measures (3/7/10) are displayed in the appendix as each shows a similar relationship. In short, this graph details the fact that, yes a large move or "jump" will be followed by continued jumps. 
 <!--The previous graph describes a bivariate relationship between ranks in "move ratio" and 4 standard deviation measures. More specifically, move ratio rank is the comparison of actual and expected move, ranked in ascending order. Please note that the scales for move ratio rank are constant and a given underlying has the same placement in each graph. SD 3/5/7/10 is also the standard deviation over the given number of days after an earnings date. These standard deviations are our "proxy for further jumps" in that we are using them to reflect realized volatility (based on simple return) during each time periods.-->
 
 ```{r, echo = FALSE, fig.align='center'}
@@ -153,14 +160,14 @@ df_post_earnings %>%
 
 ####**Next Steps**
 
-For the most part, this analysis simply reveals the well-known phenomenon of volatility clustering - high volatility begets high volatility.  However, our analysis isolates this around earnings dates, and also normalizes the notion of high volatility by market implied volatility.  It is also worth noting, as previously stated, that the correlation more positive for loss vs. gain. Meaning large downward jumps are more strongly correlated with further losses.  
+For the most part, this analysis simply reveals the well-known phenomenon of volatility clustering: high volatility begets high volatility.  However, our analysis isolates this around earnings dates, and also normalizes the notion of high volatility by market implied volatility.  It is also worth noting, as previously stated, that the correlation more positive for loss vs. gain. Meaning large downward jumps are more strongly correlated with further losses.  
   
 For further analysis, we would like to compare the current, and future, results against non-earnings data (a control group). Doing so will let us see that our findings do not hold outside of earnings and are indeed a result of the earnings release. Specifically, expected and actual move for non and earnings dates this will give us a baseline for what a pronounced or larger-than-normal jump is.  
   
 If possible, would you be able to send us non-earnings options data, so that we can analyze a control group and provide more thorough results?  
   
 ####**Appendix**
-```{r,echo=FALSE, fig.align='center'}
+```{r,echo=FALSE, fig.align='center', fig.height=4}
 # define graphs
 # p1 <-
 df_post_earnings %>% 
