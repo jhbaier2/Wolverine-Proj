@@ -3,9 +3,9 @@ title: "Wolverine Earnings Analysis - Volatility Around Earnings"
 author: "Jacob Baier"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 header-includes:
   - \setlength{\parindent}{4em}
 ---
@@ -108,7 +108,7 @@ The next graph is the result of "cleaning up" the graphed data and the sacles of
   
 On the y axis the standard deviation is also scaled using expected move, in order to create an equivalent scaled on both axes. We also applied a logarithm as stated before in addition to averaging on the "vertical lines" mentioned in the previous paragraph. By averaging these lines it allowed up to display only the center point of each line. 
    
-Finally, what we are left with is a graph with the noise removed. In addition, we can definitively say that there is a positive correlation between the move ratio and the standard deviation. The other three SD measures (3/7/10) are displayed in the appendix as each shows a similar relationship. In short, this graph details the fact that, yes a large move or "jump" will be followed by continued jumps. 
+Finally, what we are left with is a graph with the noise removed. In addition, we can definitively say that there is a positive correlation between the move ratio and the standard deviation. The other three SD measures (3/7/10) are displayed in the appendix as each shows a similar relationship. In short, this graph details the fact that, yes a large move or "jump" will be followed by continued jumps. And naturally the opposite it true, if the volatility starts low, it its likely to stay low.
 <!--The previous graph describes a bivariate relationship between ranks in "move ratio" and 4 standard deviation measures. More specifically, move ratio rank is the comparison of actual and expected move, ranked in ascending order. Please note that the scales for move ratio rank are constant and a given underlying has the same placement in each graph. SD 3/5/7/10 is also the standard deviation over the given number of days after an earnings date. These standard deviations are our "proxy for further jumps" in that we are using them to reflect realized volatility (based on simple return) during each time periods.-->
 
 ```{r, echo = FALSE, fig.align='center'}
@@ -130,7 +130,7 @@ df_post_earnings %>%
 
 ####**Gain vs Loss**
 
-With a clear and readable graph the next step was to look at how the correlation might differ depending on whether there was a gain or loss on earnings day. Following  is a similar looking graph as the previous section but split by the direction of the actual move on earnings day. As you can see both gain and loss have a similar shape to the data. The distinction between the two being that loss has a steeper fit; more positive correlation than gain. So, in essence, if a stock experiences a loss on earnings day, then it will followed by higher volatility and possible laarger losses than if the same stock gained on that day.
+With a clear and readable graph the next step was to look at how the correlation might differ depending on whether there was a gain or loss on earnings day. Following  is a similar looking graph as the previous section but split by the direction of the actual move on earnings day. As you can see both gain and loss have a similar shape to the data. The distinction between the two being that loss has a steeper fit; more positive correlation than gain. So, in essence, if a stock experiences a loss on earnings day, then it will followed by higher volatility and is more likely to experience a large move as time progreses than compared to a gain.
 
 ```{r, echo = FALSE, fig.align='center'}
 # same graph as before but split by gain/loss

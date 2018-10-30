@@ -91,6 +91,11 @@ df_stock <- #add sds to frame
   mutate(sd_m10 = rollapply(pmove, 
                             width=list(-1:-10), sd, fill = NA, align = "left"))
 # toc()#640s
+# width (-1,-n) give window for -n lines relative to calculation
+# sd_mN is reference to -N days lead up
+
+# returns -----------------------------------------------------------------
+
 # function to calculate p_0/p_(-n) -1
 Returns <- function(df, move){ # whats wrong with this for loop
   output <- vector("double", nrow(df))
