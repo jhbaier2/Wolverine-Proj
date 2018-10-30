@@ -1,11 +1,13 @@
 ---
-title: "Wolverine Earnings Analysis - Volatility around Earnings"
+title: "Wolverine Earnings Analysis - Volatility Around Earnings"
 author: "Jacob Baier"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
   html_document:
     df_print: paged
   pdf_document: default
+header-includes:
+  - \setlength{\parindent}{4em}
 ---
 <!--load packages-->
 ```{r setup, include=FALSE}
@@ -39,9 +41,9 @@ df_post_earnings <-
     mutate(move_ratio_bucket = cut(log(move_ratio), 100, labels = FALSE))
 ```
 
-<!-- descibe weighted sd better-->
+<!-- paragraphs will indent for pdf only-->
 
-##Volatility and Earnings  
+###Volatility and Earnings  
 
 This is an analysis of equity volatility around earnings reports.  In particular, we will address the following questions:  
 
@@ -52,8 +54,16 @@ This is an analysis of equity volatility around earnings reports.  In particular
 
 ####**Data & Methodology**
 <!--data: how we cleaned it up
-method: sd 3 and -3, etc. returns 3, etc define all of them, move ratio too-->
+method: sd 3 and -3, etc. returns 3, etc define all of them, move ratio too
+list and define these-->
 
+Term Definitions:  
+  
+1. **Move Ratio:**
+  
+1. **SD #:**
+  
+1. **Return #:**
 
 ####**Move-Ratio vs Subsequent Realized Volatility**
 
@@ -63,7 +73,7 @@ In order to make the graph more readable, however, each axis is scaled with a lo
 As you can see the data is widely distributed in the y direction, and to a lesser extent in the x. This is in part due to the differing underlying prices that naturally have a large effect on the calculated standard deviations. Expected move varies to a lesser degree given that this is already a measure of SD. 
 Having such a wide distribution will make it difficult to discern any concrete meaning from a graph given the amount of noise; this example is no exception. At first glance it is easy to see that there is indeed a positive correlation between the two. However, we cannot draw any conlcusions on if it is truely a correlation or a result of the noise.  
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.align='center'}
 #noisy sd 20 vs move ratio
 # df_post_earnings %>% 
 #   group_by(move_ratio_bucket, gain_loss) %>% 
@@ -87,9 +97,14 @@ df_post_earnings %>%
   labs(y = "SD 10", x = "Expected Move", title = "Expected Move against 10 Day SD")
 ```
 
+The next graph is the result of "cleaning up" the graphed data and the sacles of the plot. Here we are still listing standard deviation in the y direction, albeit modified, but now the x axis is move ratio instead of expected move. As described in the *Data & Methodology* section, move ratio is the actuale move scaled using the expected move. Here, however, we went one step further and cut the data into 100 equal width ranks. Given that there are more than 100 stocks present in the data, multiple stocks are represented by each rank. Separating the move ratios into discrete ranks allowed us to gather more readability out of a large amout of data. What this left us with was distinct veritcle lines of standard deviations corresponding to each rank.  
+  
+On the y axis the standard deviation is also scaled using expected move, in order to create an equivalent scaled on both axes. We also applied a logarithm as stated before in addition to averaging on the "vertical lines" mentioned in the previous paragraph. By averaging these lines it allowed up to display only the center point of each line. 
+   
+Finally, what we are left with is a graph with the noise removed. In addition, we can definitively say that there is a positive correlation between the move ratio and the standard deviation. The other three SD measures (3/7/10) are displayed in the appendix as each shows the same relationship. In short, this graph details the fact that, yes a large move or "jump" will be followed by continued jumps. 
+<!--The previous graph describes a bivariate relationship between ranks in "move ratio" and 4 standard deviation measures. More specifically, move ratio rank is the comparison of actual and expected move, ranked in ascending order. Please note that the scales for move ratio rank are constant and a given underlying has the same placement in each graph. SD 3/5/7/10 is also the standard deviation over the given number of days after an earnings date. These standard deviations are our "proxy for further jumps" in that we are using them to reflect realized volatility (based on simple return) during each time periods.-->
 
-
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.align='center'}
 # cleaned up SD 7 vs ratio, without gain vs loss
 df_post_earnings %>% 
   group_by(move_ratio_bucket, gain_loss) %>% 
@@ -106,7 +121,27 @@ df_post_earnings %>%
        title = "Move Ratio Rank against Average Standard 5 Day Deviation")
 ```
 
-####**Gains vs Loss**
+####**Gain vs Loss**
+
+With a clear and readable graph the next step was to look at how the correlation might differ depending on whether there was a gain or loss on earnings day. Following  is a similar looking graph as the previous section but split by the direction of the actual move on earnings day. As you can see both gain and loss have a similar shape to the data. The distinction between the two being that loss has a steeper fit; more positive correlation than gain. So, in essence, if a stock experiences a loss on earnings day, then it will followed by higher volatility and possible laarger losses than if the same stock gained on that day.
+
+```{r, echo = FALSE, fig.align='center'}
+# same graph as before but split by gain/loss
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, gain_loss) %>% 
+  summarize(avg_sd_05_ratio = log(mean(sd_05/expected_move))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_05_ratio, color = gain_loss),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_05_ratio), method = "lm",
+              se = F) +
+  facet_wrap(~ gain_loss, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. 5",
+       title = "Move Ratio Rank against Average Standard 5 Day Deviation, split by Gain/Loss")
+```
+
 
 ####**Positive and Negative Stock Performce Before Earnings**
 
@@ -118,13 +153,14 @@ df_post_earnings %>%
 
 ####**Next Steps**
 
-For the most part, this analysis simply reveals the well-known phenomenon of volatility clustering - high volatility begets high volatility.  However, our analysis isolates this around earnings dates, and also normalizes the notion of high volatility by market implied volatility.  It is also worth noting that the correlation more positive for loss vs. gain. Meaning large downward jumps are more strongly correlated with further losses.  
+For the most part, this analysis simply reveals the well-known phenomenon of volatility clustering - high volatility begets high volatility.  However, our analysis isolates this around earnings dates, and also normalizes the notion of high volatility by market implied volatility.  It is also worth noting, as previously stated, that the correlation more positive for loss vs. gain. Meaning large downward jumps are more strongly correlated with further losses.  
   
 For further analysis, we would like to compare the current, and future, results against non-earnings data (a control group). Doing so will let us see that our findings do not hold outside of earnings and are indeed a result of the earnings release. Specifically, expected and actual move for non and earnings dates this will give us a baseline for what a pronounced or larger-than-normal jump is.  
   
-If possible, would you be able to send us non-earnings options data, so that we can analyze a control group and provide more thorough results?
-
-```{r,echo=FALSE, include=FALSE}
+If possible, would you be able to send us non-earnings options data, so that we can analyze a control group and provide more thorough results?  
+  
+####**Appendix**
+```{r,echo=FALSE, fig.align='center'}
 # define graphs
 # p1 <-
 df_post_earnings %>% 
@@ -139,21 +175,21 @@ df_post_earnings %>%
               se = F) +
   facet_wrap(~ gain_loss, ncol = 1)+
   labs(x = "Move Ratio Rank", y = "Average S.D. 3",
-       title = "Move Ratio Rank against Average Standard Deviations for 3/5/7/10 days")
+       title = "Move Ratio Rank against Average Standard Deviations for 3/7/10 days")
 
 # p2 <-
-df_post_earnings %>% 
-  group_by(move_ratio_bucket, gain_loss) %>% 
-  summarize(avg_sd_05_ratio = log(mean(sd_05/expected_move))
-            ,num_obs = n()) %>% 
-  filter(num_obs > 50) %>% 
-  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
-                                      y = avg_sd_05_ratio, color = gain_loss),
-                        show.legend = F) +
-  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_05_ratio), method = "lm",
-              se = F) +
-  facet_wrap(~ gain_loss, ncol = 1)+
-  labs(x = "Move Ratio Rank", y = "Average S.D. 5")
+# df_post_earnings %>% 
+#   group_by(move_ratio_bucket, gain_loss) %>% 
+#   summarize(avg_sd_05_ratio = log(mean(sd_05/expected_move))
+#             ,num_obs = n()) %>% 
+#   filter(num_obs > 50) %>% 
+#   ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+#                                       y = avg_sd_05_ratio, color = gain_loss),
+#                         show.legend = F) +
+#   geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_05_ratio), method = "lm",
+#               se = F) +
+#   facet_wrap(~ gain_loss, ncol = 1)+
+#   labs(x = "Move Ratio Rank", y = "Average S.D. 5")
 
 # p3 <-
 df_post_earnings %>% 
