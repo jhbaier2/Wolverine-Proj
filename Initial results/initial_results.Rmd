@@ -1,11 +1,12 @@
 ---
-title: "Wolverine Earnings Analysis - Volatility Around Earnings"
+title: "Wolverine Earnings Analysis" 
+subtitle: "Volatility Around Earnings"
 author: "Jacob Baier"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 header-includes:
   - \setlength{\parindent}{4em}
 ---
@@ -43,7 +44,7 @@ df_post_earnings <-
 
 <!-- paragraphs will indent for pdf only-->
 
-###Volatility and Earnings  
+##Volatility and Earnings  
 
 This is an analysis of equity volatility around earnings reports.  In particular, we will address the following questions:  
 
@@ -52,7 +53,7 @@ This is an analysis of equity volatility around earnings reports.  In particular
 1.  Is the relationship in #1 different when stock price performance has been positive or negative in the run-up to the earnings report.
 1.  Is the relationship in #1 different when realized volatility has been high or low (relative to implied volatility) in the run-up to the earnings report?  
 
-####**Data & Methodology**
+###**Data & Methodology**
 <!--data: how we cleaned it up
 method: sd 3 and -3, etc. returns 3, etc define all of them, move ratio too
 list and define these-->
@@ -72,7 +73,7 @@ SD in this analysis is simply short for standard deviation. We calculated 8 diff
 * **Return #:**  
 Return for our purposes are the stock movement over a number of days as compared to earnings days. In this case we used the same time intervals as SD, but only for the lead up to earnings instead of both (-3/-5/-7/-10). So Return -3, as we are calling it, would be the the stock movement for 3 days leading up to and earnings day. 
 
-####**Move-Ratio vs Subsequent Realized Volatility**
+###**Move-Ratio vs Subsequent Realized Volatility**
 
 The following graph represents the "raw" data graphed at face value.
 Specifically, it is the expected move graphed against the 10 day standard deviations (SD 10).
@@ -128,7 +129,7 @@ df_post_earnings %>%
        title = "Move Ratio Rank against Average Standard 5 Day Deviation")
 ```
 
-####**Gain vs Loss**
+###**Gain vs Loss**
 
 With a clear and readable graph the next step was to look at how the correlation might differ depending on whether there was a gain or loss on earnings day. Following  is a similar looking graph as the previous section but split by the direction of the actual move on earnings day. As you can see both gain and loss have a similar shape to the data. The distinction between the two being that loss has a steeper fit; more positive correlation than gain. So, in essence, if a stock experiences a loss on earnings day, then it will followed by higher volatility and is more likely to experience a large move as time progreses than compared to a gain.
 
@@ -150,15 +151,15 @@ df_post_earnings %>%
 ```
 
 
-####**Positive and Negative Stock Performce Before Earnings**
+###**Positive and Negative Stock Performce Before Earnings**
 
 *section placeholder*
 
-####**Price Volatility Before Earnings**
+###**Price Volatility Before Earnings**
 
 *section placeholder*
 
-####**Next Steps**
+###**Next Steps**
 
 For the most part, this analysis simply reveals the well-known phenomenon of volatility clustering: high volatility begets high volatility.  However, our analysis isolates this around earnings dates, and also normalizes the notion of high volatility by market implied volatility.  It is also worth noting, as previously stated, that the correlation more positive for loss vs. gain. Meaning large downward jumps are more strongly correlated with further losses.  
   
@@ -166,7 +167,7 @@ For further analysis, we would like to compare the current, and future, results 
   
 If possible, would you be able to send us non-earnings options data, so that we can analyze a control group and provide more thorough results?  
   
-####**Appendix**
+###**Appendix**
 ```{r,echo=FALSE, fig.align='center', fig.height=4}
 # define graphs
 # p1 <-
