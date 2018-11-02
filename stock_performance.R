@@ -198,6 +198,8 @@ df_pre_analysis %>%
 # df_pre_analysis %>% write_csv("pre_earnings_realized_volatility.csv")
 # uploaded to drive
 
+# need to double check this process
+
 # returns -----------------------------------------------------------------
 
 # function to calculate p_0/p_(-n) -1
