@@ -94,6 +94,27 @@ df_stock <- #add sds to frame
 # width (-1,-n) give window for -n lines relative to calculation
 # sd_mN is reference to -N days lead up
 
+#should be able to use old sd calcs but use -3,-5,-7,-10 in the
+# bizdays offset, in order to select the sd calcualtion from the 
+# correct number of days before
+
+# todo: write stocks performance to new csv that includes sd
+  # read that in to this file and do the inner join shiz
+
+df_stock <-
+  df_stock %>% 
+  mutate(act_move = (close - prev_close)/prev_close) %>% 
+  group_by(Symbol) %>%
+  mutate(sd_03 = rollapply(act_move, 3, sd, fill = NA, align = "left")) %>% 
+  mutate(sd_05 = rollapply(act_move, 5, sd, fill = NA, align = "left")) %>%
+  mutate(sd_07 = rollapply(act_move, 7, sd, fill = NA, align = "left")) %>%
+  mutate(sd_10 = rollapply(act_move, 10, sd, fill = NA, align = "left"))
+
+# df_stock %>% #write the sds to a csv so we can stop running this script
+#   write_csv("stock_performance_sd.csv")
+
+# #I uploaded this to the drive folder
+
 # returns -----------------------------------------------------------------
 
 # function to calculate p_0/p_(-n) -1
