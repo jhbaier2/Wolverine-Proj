@@ -153,7 +153,7 @@ df_pre_earnings <-
 # 4 innerjoins
 df_m3 <-
   df_pre_earnings %>% 
-  inner_join(df_stock %>% 
+  left_join(df_stock %>% 
                select(Symbol, TradeDate, sd_03),
              c("symbol" = "Symbol", "m3_biz" = "TradeDate"))
 
@@ -177,6 +177,26 @@ df_m10 <-
 
 df_pre_analysis <-
   cbind(df_m3, df_m5$sd_05, df_m7$sd_07, df_m10$sd_10)
+
+names(df_pre_analysis)[12] <- "sd_05"
+names(df_pre_analysis)[13] <- "sd_07"
+names(df_pre_analysis)[14] <- "sd_10"  
+
+df_pre_analysis <-
+df_pre_analysis %>%
+  select(symbol
+         , earnings_date
+         , expected_move
+         , actual_move
+         , abs_actual_move
+         , move_ratio
+         , sd_03
+         , sd_05
+         , sd_07
+         , sd_10)
+
+# df_pre_analysis %>% write_csv("pre_earnings_realized_volatility.csv")
+# uploaded to drive
 
 # returns -----------------------------------------------------------------
 
