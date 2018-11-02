@@ -18,14 +18,21 @@ df_pre_earnings %>%
   ggplot() + geom_point(mapping = aes(
     x = log(expected_move), y = log(sd_03)
   ))
-# looks to be less correlation than post?
+# looks to be less correlation than post
+  # so volatility clustering has a stronger effect after earnings
+  # assuming this graph is correct
 
 df_pre_earnings %>% 
   ggplot() + geom_point(mapping = aes(
     x = log(move_ratio), y = log(sd_03/expected_move)
   ))
 
-
+df_pre_earnings %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarize(avg_sd3_ratio = log(mean(sd_03/expected_move))) %>% 
+  ggplot()+geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd3_ratio
+  ))
 
 # returns graphs ----------------------------------------------------------
 
