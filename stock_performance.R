@@ -122,7 +122,7 @@ df_stock <-
 # df_stock %>% #write the sds to a csv so we can stop running this script
 #   write_csv("stock_performance_sd.csv")
 
-# #I uploaded this to the drive folder
+#^^I uploaded this to the drive folder
 
 df_pre_earnings <- # m#_biz means -n business days before earnings
   df_pre_earnings %>% # m for minus
