@@ -38,23 +38,27 @@ df_pre_analysis <- df_pre_earnings %>%
                select(Symbol, TradeDate, rt_m3, rt_m5, rt_m7, rt_m10) 
              , c("symbol" = "Symbol", "next_biz_day" = "TradeDate"))
 
-df_pre_analysis <-
-  df_pre_analysis %>%
-  select(symbol
-         , earnings_date
-         , expected_move
-         , actual_move
-         , abs_actual_move
-         , move_ratio
-         , rt_m3
-         , rt_m5
-         , rt_m7
-         , rt_m10)
+# depricated analysis -----------------------------------------------------
 
-df_pre_analysis<-
-  df_pre_analysis %>% 
-  filter(move_ratio > 0.01) %>% 
-  mutate(move_ratio_bucket = cut(log(move_ratio), 100, labels = FALSE))
+
+
+# df_pre_analysis <-
+#   df_pre_analysis %>%
+#   select(symbol
+#          , earnings_date
+#          , expected_move
+#          , actual_move
+#          , abs_actual_move
+#          , move_ratio
+#          , rt_m3
+#          , rt_m5
+#          , rt_m7
+#          , rt_m10)
+
+# df_pre_analysis<-
+#   df_pre_analysis %>% 
+#   filter(move_ratio > 0.01) %>% 
+#   mutate(move_ratio_bucket = cut(log(move_ratio), 100, labels = FALSE))
 
 gl <- function(move){
   if (move >0)
@@ -94,6 +98,11 @@ df_stock <- #add sds to frame
 # width (-1,-n) give window for -n lines relative to calculation
 # sd_mN is reference to -N days lead up
 
+
+
+# standard deviations -----------------------------------------------------
+
+
 #should be able to use old sd calcs but use -3,-5,-7,-10 in the
 # bizdays offset, in order to select the sd calcualtion from the 
 # correct number of days before
@@ -102,7 +111,7 @@ df_stock <- #add sds to frame
   # read that in to this file and do the inner join shiz
 
 df_stock <-
-  df_stock %>% 
+  df_stock %>% #same SDs weve calculated in the past
   mutate(act_move = (close - prev_close)/prev_close) %>% 
   group_by(Symbol) %>%
   mutate(sd_03 = rollapply(act_move, 3, sd, fill = NA, align = "left")) %>% 
@@ -114,6 +123,60 @@ df_stock <-
 #   write_csv("stock_performance_sd.csv")
 
 # #I uploaded this to the drive folder
+
+df_pre_earnings <- # m#_biz means -n business days before earnings
+  df_pre_earnings %>% # m for minus
+  mutate(m3_biz = bizdays::add.bizdays(earnings_date, -3 , 'Rmetrics/NYSE')) %>% 
+  mutate(m5_biz = add.bizdays(earnings_date, -5, 'Rmetrics/NYSE')) %>% 
+  mutate(m7_biz = add.bizdays(earnings_date, -7, 'Rmetrics/NYSE')) %>% 
+  mutate(m10_biz = add.bizdays(earnings_date, -10, 'Rmetrics/NYSE'))
+# want to initiate the business day before earnings equal to our window size
+# We can use these for our lead up realized vol
+
+# want to remove old SDs to avoid overlap
+# next step is to append new SDs that are associated with the negative windows
+df_pre_earnings <-
+  df_pre_earnings %>% 
+  select(symbol, 
+         earnings_date,
+         expected_move,
+         actual_move,
+         abs_actual_move,
+         move_ratio,
+         m3_biz,
+         m5_biz,
+         m7_biz,
+         m10_biz)
+
+# inner join to pick out associated SDs
+# probably can be done in one line to pick out all 4 but seems easier to write 
+# 4 innerjoins
+df_m3 <-
+  df_pre_earnings %>% 
+  inner_join(df_stock %>% 
+               select(Symbol, TradeDate, sd_03),
+             c("symbol" = "Symbol", "m3_biz" = "TradeDate"))
+
+df_m5 <-
+  df_pre_earnings %>% 
+  inner_join(df_stock %>% 
+               select(Symbol, TradeDate, sd_05),
+             c("symbol" = "Symbol", "m5_biz" = "TradeDate"))
+
+df_m7 <-
+  df_pre_earnings %>% 
+  inner_join(df_stock %>% 
+               select(Symbol, TradeDate, sd_07),
+             c("symbol" = "Symbol", "m7_biz" = "TradeDate"))
+
+df_m10 <-
+  df_pre_earnings %>% 
+  inner_join(df_stock %>% 
+               select(Symbol, TradeDate, sd_10),
+             c("symbol" = "Symbol", "m10_biz" = "TradeDate"))
+
+df_pre_analysis <-
+  cbind(df_m3, df_m5$sd_05, df_m7$sd_07, df_m10$sd_10)
 
 # returns -----------------------------------------------------------------
 
