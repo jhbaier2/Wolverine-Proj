@@ -161,7 +161,7 @@ df_post_earnings %>%
 
 ###**Next Steps**
 
-For the most part, this analysis simply reveals the well-known phenomenon of volatility clustering: high volatility begets high volatility.  However, our analysis isolates this around earnings dates, and also normalizes the notion of high volatility by market implied volatility.  It is also worth noting, as previously stated, that the correlation more positive for loss vs. gain. Meaning large downward jumps are more strongly correlated with further losses.  
+For the most part, this analysis simply reveals the well-known phenomenon of volatility clustering: high volatility begets high volatility.  However, our analysis isolates this around earnings dates, and also normalizes the notion of high volatility by market implied volatility.  It is also worth noting, as previously stated, that the correlation more positive for loss vs. gain. Meaning large downward jumps are more strongly correlated with further jumps.  
   
 For further analysis, we would like to compare the current, and future, results against non-earnings data (a control group). Doing so will let us see that our findings do not hold outside of earnings and are indeed a result of the earnings release. Specifically, expected and actual move for non and earnings dates this will give us a baseline for what a pronounced or larger-than-normal jump is.  
   

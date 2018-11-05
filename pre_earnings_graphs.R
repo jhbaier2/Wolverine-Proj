@@ -32,7 +32,13 @@ df_pre_earnings %>%
   summarize(avg_sd3_ratio = log(mean(sd_03/expected_move))) %>% 
   ggplot()+geom_point(mapping = aes(
     x = move_ratio_bucket, y = avg_sd3_ratio
-  ))
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd3_ratio
+  ), method = "lm", se = F)+
+  geom_smooth(mapping= aes(
+    x = move_ratio_bucket, y = avg_sd3_ratio, color = "red"
+  ), method = "auto", se = F)
 
 # returns graphs ----------------------------------------------------------
 

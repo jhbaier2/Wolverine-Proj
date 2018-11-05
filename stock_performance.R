@@ -200,7 +200,7 @@ df_pre_analysis %>%
 
 # need to double check this process
 
-# returns -----------------------------------------------------------------
+# deprecated returns -----------------------------------------------------------------
 
 # function to calculate p_0/p_(-n) -1
 Returns <- function(df, move){ # whats wrong with this for loop
@@ -239,3 +239,66 @@ df_stock %>%
     df_stock$rtm3[i] <-
       df_stock$real_move[i] / df_stock$real_move[i-3] -1
   }
+
+
+
+
+# make the data framed grouped
+# add in an empty column for each returns 
+# then run the for loop separately
+
+df_stock <-
+  df_stock %>% group_by(Symbol) %>% 
+  mutate(rtm3 = 0) %>% 
+  mutate(rtm5 = 0) %>% 
+  mutate(rtm7 = 0) %>% 
+  mutate(rtm10 = 0)
+
+# now fill those columns
+
+# vector <-
+#   df_stock %>% 
+#   group_by(Symbol) %>% 
+#   seq_along()
+# 
+# for (i in vector) {
+#   df_stock$rtm3[i] <-
+#     df_stock$act_move[i]/df_stock$act_move[i-3] -1
+# }
+
+Returns <- function(df, move){
+  output <- data.frame(nrow(df))
+  for (i in 1:nrow(.)){
+    output[i] <- 
+      move[i]/move[i-3]-1
+  }
+}
+
+# df_stock <-
+  df_stock %>% 
+  group_by(Symbol) %>% 
+  do(rtm3 =
+       # insert custom function here
+       # function(.$close, .$prev_close)
+       Returns(., .$close)
+       )
+  
+  
+
+# Returns -----------------------------------------------------------------
+
+df_stock_returns <-  
+    df_stock %>% 
+    select(TradeDate,
+           Symbol,
+           prev_close,
+           close,
+           act_move)
+
+df_stock_returns$diff_close <- 
+  df_stock_returns %>% 
+  group_by(Symbol) %>% 
+  c(0, diff(.$close, lag = 1))
+# Were trying to compare row n with n-1 to get a difference in close, we run into an error already with column length
+# the first row will be 0 to becasue there is no difference for the first close of each symbol
+# we will then append a new row "simple_returns" which is the entire column diff_Close/c(1,Close[1:nrows-1]) using vector division, faster than a loop
