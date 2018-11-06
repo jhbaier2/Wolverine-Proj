@@ -4,9 +4,9 @@ subtitle: "Volatility Around Earnings"
 author: "Jacob Baier"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 header-includes:
   - \setlength{\parindent}{4em}
 ---
@@ -152,12 +152,45 @@ df_post_earnings %>%
 
 
 ###**Positive and Negative Stock Performce Before Earnings**
+<!--feed in pre earnings returns data-->
+```{r, include= FALSE}
+
+```
 
 *section placeholder*
 
 ###**Price Volatility Before Earnings**
+<!--feed in pre earnings volatility data-->
+```{r, include=FALSE}
+df_pre_earnings <- read_csv("pre_earnings_realized_volatility.csv")
 
-*section placeholder*
+df_pre_earnings <-
+  df_pre_earnings %>% 
+  filter(expected_move > 0.01) %>% 
+  filter(move_ratio > 0.01) %>% 
+  mutate(gain_loss = map_chr(actual_move, 
+                             function(move) if(move < 0) {"loss"} else {"gain"})) %>% 
+  mutate(move_ratio_bucket = cut(log(move_ratio), 100, labels = FALSE))
+```
+
+In a similar fashion to the *Move-Ratio vs Subsequent Realized Volatility* section, we compared the same Move Ratio Rank to the average standard deviation leading up to earnings day. Recall that the standard deviation for 5 days before we called S.D -5 as detailed in the *Terms and Definitions* section above. The graph included in this section is for the 5 day lead-up S.D whereas the other three graphs (-3/-7/-10) are again indcluded in the appendix.  
+  
+At first glance the graph is very similar to that of the post earnings volatility graphs. Indeed the shape of the data is similar but there are a key differences that greatly affect the conclusions that can be drawn from the data. The biggest distinction is in the extreme of rank; specifically withing the top 25% or ~75 and up. Here the data greatly divegerges from the tight grouping seend in the lower ranks. This divergences that S.D is more randomly ditributed in the associated Move Ratios. So, a high move ratio on earnings day is not predicted by the standard deviation leading up. In addition, the large distribution skews the fit line upwards by a large amount. The results is what appears to be a positive correlation whereas it should be trended more towards zero; as depicted by the tight and flat distribution of means in the lower ranks.
+Overall, a high move ratio on earnings is more associated with a random distribution of volatility leading up to that day, and a less than large ratio is barely correlated, if at all. 
+
+```{r, echo = F, fig.align = 'center', warning= FALSE}
+df_pre_earnings %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarize(avg_sd5_ratio = log(mean(sd_05/expected_move))) %>% 
+  ggplot()+geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd5_ratio
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd5_ratio
+  ), method = "lm", se = F)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. -5",
+       title = "Move Ratio Rank vs 5 Day Lead-Up Standard Deviation")
+```
 
 ###**Next Steps**
 
@@ -168,9 +201,8 @@ For further analysis, we would like to compare the current, and future, results 
 If possible, would you be able to send us non-earnings options data, so that we can analyze a control group and provide more thorough results?  
   
 ###**Appendix**
-```{r,echo=FALSE, fig.align='center', fig.height=4}
-# define graphs
-# p1 <-
+```{r,echo=FALSE, fig.align='center', fig.height=4, warning=FALSE}
+# remaining post earnings vol graphs
 df_post_earnings %>% 
   group_by(move_ratio_bucket, gain_loss) %>% 
   summarize(avg_sd_03_ratio = log(mean(sd_03/expected_move))
@@ -183,23 +215,9 @@ df_post_earnings %>%
               se = F) +
   facet_wrap(~ gain_loss, ncol = 1)+
   labs(x = "Move Ratio Rank", y = "Average S.D. 3",
-       title = "Move Ratio Rank against Average Standard Deviations for 3/7/10 days")
+       title = "Move Ratio Rank vs Average Standard Deviations for 3/7/10 days")
 
-# p2 <-
-# df_post_earnings %>% 
-#   group_by(move_ratio_bucket, gain_loss) %>% 
-#   summarize(avg_sd_05_ratio = log(mean(sd_05/expected_move))
-#             ,num_obs = n()) %>% 
-#   filter(num_obs > 50) %>% 
-#   ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
-#                                       y = avg_sd_05_ratio, color = gain_loss),
-#                         show.legend = F) +
-#   geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_05_ratio), method = "lm",
-#               se = F) +
-#   facet_wrap(~ gain_loss, ncol = 1)+
-#   labs(x = "Move Ratio Rank", y = "Average S.D. 5")
 
-# p3 <-
 df_post_earnings %>% 
   group_by(move_ratio_bucket, gain_loss) %>% 
   summarize(avg_sd_07_ratio = log(mean(sd_07/expected_move))
@@ -213,7 +231,6 @@ df_post_earnings %>%
   facet_wrap(~ gain_loss, ncol = 1)+
   labs(x = "Move Ratio Rank", y = "Average S.D. 7")
 
-# p4 <-
 df_post_earnings %>% 
   group_by(move_ratio_bucket, gain_loss) %>% 
   summarize(avg_sd_10_ratio = log(mean(sd_10/expected_move))
@@ -226,7 +243,47 @@ df_post_earnings %>%
               se = F) +
   facet_wrap(~ gain_loss, ncol = 1)+
   labs(x = "Move Ratio Rank", y = "Average S.D 10")
+###--------------------------------------
+#pre earnings returns
 
-# gridExtra::grid.arrange(p1, p2, p3, p4, ncol = 1)
+
+###--------------------------------------
+# pre earnings vol graphs
+df_pre_earnings %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarize(avg_sd3_ratio = log(mean(sd_03/expected_move))) %>% 
+  ggplot()+geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd3_ratio
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd3_ratio
+  ), method = "lm", se = F)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. -3",
+       title = "Move Ratio Rank vs Lead-Up S.D. -3/-7/-10")
+
+
+df_pre_earnings %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarize(avg_sd7_ratio = log(mean(sd_07/expected_move))) %>% 
+  ggplot()+geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd7_ratio
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd7_ratio
+  ), method = "lm", se = F)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. -7")
+
+
+df_pre_earnings %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarize(avg_sd10_ratio = log(mean(sd_10/expected_move))) %>% 
+  ggplot()+geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd10_ratio
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd10_ratio
+  ), method = "lm", se = F)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. -10")
+
 ```
 

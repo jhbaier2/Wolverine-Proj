@@ -35,10 +35,56 @@ df_pre_earnings %>%
   ))+
   geom_smooth(mapping = aes(
     x = move_ratio_bucket, y = avg_sd3_ratio
+  ), method = "lm", se = F)#+
+  # geom_smooth(mapping= aes(
+  #   x = move_ratio_bucket, y = avg_sd3_ratio, color = "red"
+  # ), method = "auto", se = F)
+
+df_pre_earnings %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarize(avg_sd5_ratio = log(mean(sd_05/expected_move))) %>% 
+  ggplot()+geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd5_ratio
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd5_ratio
+  ), method = "lm", se = F)
+
+
+df_pre_earnings %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarize(avg_sd7_ratio = log(mean(sd_07/expected_move))) %>% 
+  ggplot()+geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd7_ratio
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd7_ratio
+  ), method = "lm", se = F)
+
+df_pre_earnings %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarize(avg_sd10_ratio = log(mean(sd_10/expected_move))) %>% 
+  ggplot()+geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd10_ratio
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd10_ratio
+  ), method = "lm", se = F)
+
+# values deviate from the mean and time goes away from earnings
+# volatility is less correlated with earnings day moves as  you go back further from 
+# earnings, only the -3 had any real correlation
+
+df_pre_earnings %>% 
+  group_by(move_ratio_bucket, gain_loss) %>% 
+  summarize(avg_sd5_ratio = log(mean(sd_05/expected_move))) %>% 
+  ggplot()+geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd5_ratio
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_sd5_ratio
   ), method = "lm", se = F)+
-  geom_smooth(mapping= aes(
-    x = move_ratio_bucket, y = avg_sd3_ratio, color = "red"
-  ), method = "auto", se = F)
+  facet_wrap(~gain_loss, nrow = 2)
 
 # returns graphs ----------------------------------------------------------
 
