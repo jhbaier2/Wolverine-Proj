@@ -25,7 +25,7 @@ df_post_earnings <- read_csv("post_earnings_realized_volatility.csv")
   - \setlength{\parindent}{4em}-->
 
 <!--massage data-->
-```{r, include=FALSE}
+```{r data input, include=FALSE}
 #massage data to how we wnt to graph it
 df_post_earnings <-
   df_post_earnings %>% 
@@ -83,7 +83,7 @@ In order to make the graph more readable, however, each axis is scaled with a lo
 As you can see the data is widely distributed in the y direction, and to a lesser extent in the x. This is in part due to the differing underlying prices that naturally have a large effect on the calculated standard deviations. Expected move varies to a lesser degree given that this is already a measure of SD. 
 Having such a wide distribution will make it difficult to discern any concrete meaning from a graph given the amount of noise; this example is no exception. At first glance it is easy to see that there is indeed a positive correlation between the two. However, we cannot draw any conlcusions on if it is truely a correlation or a result of the noise.  
 
-```{r, echo = FALSE, fig.align='center'}
+```{r noisy graph ex, echo = FALSE, fig.align='center'}
 #noisy sd 20 vs move ratio
 # df_post_earnings %>% 
 #   group_by(move_ratio_bucket, gain_loss) %>% 
@@ -114,7 +114,7 @@ On the y axis the standard deviation is also scaled using expected move, in orde
 Finally, what we are left with is a graph with the noise removed. In addition, we can definitively say that there is a positive correlation between the move ratio and the standard deviation. The other three SD measures (3/7/10) are displayed in the appendix as each shows a similar relationship. In short, this graph details the fact that, yes a large move or "jump" will be followed by continued jumps. And naturally the opposite it true, if the volatility starts low, it its likely to stay low.
 <!--The previous graph describes a bivariate relationship between ranks in "move ratio" and 4 standard deviation measures. More specifically, move ratio rank is the comparison of actual and expected move, ranked in ascending order. Please note that the scales for move ratio rank are constant and a given underlying has the same placement in each graph. SD 3/5/7/10 is also the standard deviation over the given number of days after an earnings date. These standard deviations are our "proxy for further jumps" in that we are using them to reflect realized volatility (based on simple return) during each time periods.-->
 
-```{r, echo = FALSE, fig.align='center'}
+```{r post earnings graph, echo = FALSE, fig.align='center'}
 # cleaned up SD 7 vs ratio, without gain vs loss
 df_post_earnings %>% 
   group_by(move_ratio_bucket, gain_loss) %>% 
@@ -135,7 +135,7 @@ df_post_earnings %>%
 
 With a clear and readable graph the next step was to look at how the correlation might differ depending on whether there was a gain or loss on earnings day. Following  is a similar looking graph as the previous section but split by the direction of the actual move on earnings day. As you can see both gain and loss have a similar shape to the data. The distinction between the two being that loss has a steeper fit; more positive correlation than gain. So, in essence, if a stock experiences a loss on earnings day, then it will followed by higher volatility and is more likely to experience a large move as time progreses than compared to a gain.
 
-```{r, echo = FALSE, fig.align='center'}
+```{r split gain v loss, echo = FALSE, fig.align='center'}
 # same graph as before but split by gain/loss
 df_post_earnings %>% 
   group_by(move_ratio_bucket, gain_loss) %>% 
@@ -155,7 +155,7 @@ df_post_earnings %>%
 
 ###**Positive and Negative Stock Performce Before Earnings**
 <!--feed in pre earnings returns data-->
-```{r, include= FALSE}
+```{r pre earnings return, include= FALSE}
 
 ```
 
@@ -163,7 +163,7 @@ df_post_earnings %>%
 
 ###**Price Volatility Before Earnings**
 <!--feed in pre earnings volatility data-->
-```{r, include=FALSE}
+```{r input pre data, include=FALSE}
 df_pre_earnings <- read_csv("pre_earnings_realized_volatility.csv")
 
 df_pre_earnings <-
@@ -180,8 +180,9 @@ In a similar fashion to the *Move-Ratio vs Subsequent Realized Volatility* secti
 At first glance the graph is very similar to that of the post earnings volatility graphs. Indeed the shape of the data is similar but there are a key differences that greatly affect the conclusions that can be drawn from the data. The biggest distinction is in the extreme of rank; specifically withing the top 25%. Here the data greatly divegerges from the tight grouping seen in the lower ranks. This divergences that S.D is more randomly ditributed in the associated Move Ratios. So, a high move ratio on earnings day is not predicted by the standard deviation leading up. In addition, the large distribution skews the fit line upwards by a large amount. The results is what appears to be a positive correlation whereas it should be trended more towards zero; as depicted by the tight and flat distribution of means in the lower ranks.
 Overall, a high move ratio on earnings is more associated with a random distribution of volatility leading up to that day, and a less than large ratio is barely correlated, if at all. 
 
-```{r, echo = F, fig.align = 'center', warning= FALSE}
+```{r pre earnings vol, echo = F, fig.align = 'center', warning= FALSE}
 df_pre_earnings %>% 
+  # filter(move_ratio_bucket < 80) %>% 
   group_by(move_ratio_bucket) %>% 
   summarize(avg_sd5_ratio = log(mean(sd_05/expected_move))) %>% 
   ggplot()+geom_point(mapping = aes(
@@ -203,7 +204,7 @@ For further analysis, we would like to compare the current, and future, results 
 If possible, would you be able to send us non-earnings options data, so that we can analyze a control group and provide more thorough results?  
   
 ###**Appendix**
-```{r,echo=FALSE, fig.align='center', fig.height=4, warning=FALSE}
+```{r appendix,echo=FALSE, fig.align='center', fig.height=4, warning=FALSE}
 # remaining post earnings vol graphs
 df_post_earnings %>% 
   group_by(move_ratio_bucket, gain_loss) %>% 

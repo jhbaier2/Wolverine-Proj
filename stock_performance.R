@@ -2,10 +2,10 @@ library(tidyverse)
 
 df_stock <- read_csv("stock_performance.csv")
 
-df_stock <-
-  df_stock %>% 
-  mutate(real_move = close - prev_close) %>% 
-  mutate(absmove = abs(real_move))
+# df_stock <-
+#   df_stock %>% 
+#   mutate(real_move = close - prev_close) %>% 
+#   mutate(absmove = abs(real_move))
 
 library(zoo)
 # tic()
@@ -291,14 +291,184 @@ df_stock_returns <-
     df_stock %>% 
     select(TradeDate,
            Symbol,
-           prev_close,
-           close,
-           act_move)
+           close) %>% 
+    arrange(Symbol, TradeDate)
 
-df_stock_returns$diff_close <- 
-  df_stock_returns %>% 
-  group_by(Symbol) %>% 
-  c(0, diff(.$close, lag = 1))
+# df_stock_returns$diff_close <- 
+#   df_stock_returns %>% 
+#   group_by(Symbol) %>% 
+#   c(0, diff(.$close, lag = 1))
 # Were trying to compare row n with n-1 to get a difference in close, we run into an error already with column length
 # the first row will be 0 to becasue there is no difference for the first close of each symbol
 # we will then append a new row "simple_returns" which is the entire column diff_Close/c(1,Close[1:nrows-1]) using vector division, faster than a loop
+
+
+  # per kaisa:
+  # refactor data to long instead of tall,
+  # use spread and gather to do so and return to tall
+  # then can use diff to calculate returns
+  # spread() then gather() to return
+
+# df_stock_wide <-
+#   df_stock_returns %>% 
+#   group_by_at(vars(-close)) %>% 
+#   mutate(row_id = 1:n()) %>% ungroup() %>% 
+#   spread(key = Symbol, value = close) %>%
+#   select(-row_id)
+
+# df_stock_wide <-
+#   df_stock_returns %>% 
+#   group_by(Symbol) %>% 
+#   mutate(row_id = 1:n()) %>% 
+#   ungroup() %>% 
+#   spread(key = Symbol, value = close) %>% 
+#   select(-row_id) %>% 
+#   filter(!is.na(.$A))
+
+  
+#brute force returns
+dbl_ret <- rep(NA, nrow(df_stock_returns))
+dbl_ret3 <- rep(NA, nrow(df_stock_returns))
+dbl_ret5 <- rep(NA, nrow(df_stock_returns))
+dbl_ret7 <- rep(NA, nrow(df_stock_returns))
+dbl_ret10 <- rep(NA, nrow(df_stock_returns))
+
+for (ix in 3:nrow(df_stock_returns)){
+  if (ix %% 50000 == 0) {
+    print(ix)
+    toc()
+    tic()
+  }
+  if(df_stock_returns$Symbol[ix] == df_stock_returns$Symbol[ix-2]){
+    dbl_ret[ix] <-
+      df_stock_returns$close[ix] / df_stock_returns$close[ix-2]
+  }
+}
+for (ix in 4:nrow(df_stock_returns)){
+  if (ix %% 50000 == 0) {
+    print(ix)
+    toc()
+    tic()
+  }
+  if(df_stock_returns$Symbol[ix] == df_stock_returns$Symbol[ix-3]){
+    dbl_ret3[ix] <-
+      df_stock_returns$close[ix] / df_stock_returns$close[ix-3]
+  }
+}
+for (ix in 6:nrow(df_stock_returns)){
+  if (ix %% 50000 == 0) {
+    print(ix)
+    toc()
+    tic()
+  }
+  if(df_stock_returns$Symbol[ix] == df_stock_returns$Symbol[ix-5]){
+    dbl_ret5[ix] <-
+      df_stock_returns$close[ix] / df_stock_returns$close[ix-5]
+  }
+}
+for (ix in 8:nrow(df_stock_returns)){
+  if (ix %% 50000 == 0) {
+    print(ix)
+    toc()
+    tic()
+  }
+  if(df_stock_returns$Symbol[ix] == df_stock_returns$Symbol[ix-7]){
+    dbl_ret7[ix] <-
+      df_stock_returns$close[ix] / df_stock_returns$close[ix-7]
+  }
+}
+for (ix in 11:nrow(df_stock_returns)){
+  if (ix %% 50000 == 0) {
+    print(ix)
+    toc()
+    tic()
+  }
+  if(df_stock_returns$Symbol[ix] == df_stock_returns$Symbol[ix-10]){
+    dbl_ret10[ix] <-
+      df_stock_returns$close[ix] / df_stock_returns$close[ix-10]
+  }
+}
+
+df_stock_returns$ret_2 <- dbl_ret - 1
+df_stock_returns$ret_3 <- dbl_ret3 - 1
+df_stock_returns$ret_5 <- dbl_ret5 - 1
+df_stock_returns$ret_7 <- dbl_ret7 - 1
+df_stock_returns$ret_10 <- dbl_ret10 - 1
+
+#match dates up to earnings dates and write to a csv
+
+df_pre_earnings <- # m#_biz means -n business days before earnings
+  df_pre_earnings %>% # m for minus
+  mutate(m3_biz = bizdays::add.bizdays(earnings_date, -3 , 'Rmetrics/NYSE')) %>% 
+  mutate(m5_biz = add.bizdays(earnings_date, -5, 'Rmetrics/NYSE')) %>% 
+  mutate(m7_biz = add.bizdays(earnings_date, -7, 'Rmetrics/NYSE')) %>% 
+  mutate(m10_biz = add.bizdays(earnings_date, -10, 'Rmetrics/NYSE')) %>% 
+  mutate(m2_biz = add.bizdays(earnings_date, -2, 'Rmetrics/NYSE'))
+
+df_pre_earnings <-
+  df_pre_earnings %>% 
+  select(symbol, 
+         earnings_date,
+         expected_move,
+         actual_move,
+         abs_actual_move,
+         move_ratio,
+         m3_biz,
+         m5_biz,
+         m7_biz,
+         m10_biz,
+         m2_biz)
+
+df_m3 <-
+  df_pre_earnings %>% 
+  inner_join(df_stock_returns %>% 
+              select(Symbol, TradeDate, ret_3),
+            c("symbol" = "Symbol", "m3_biz" = "TradeDate"))
+
+df_m5 <-
+  df_pre_earnings %>% 
+  inner_join(df_stock_returns %>% 
+              select(Symbol, TradeDate, ret_5),
+            c("symbol" = "Symbol", "m3_biz" = "TradeDate"))
+
+df_m7 <-
+  df_pre_earnings %>% 
+  inner_join(df_stock_returns %>% 
+              select(Symbol, TradeDate, ret_7),
+            c("symbol" = "Symbol", "m3_biz" = "TradeDate"))
+
+df_m10 <-
+  df_pre_earnings %>% 
+  inner_join(df_stock_returns %>% 
+               select(Symbol, TradeDate, ret_10),
+             c("symbol" = "Symbol", "m3_biz" = "TradeDate"))
+
+df_m2 <-
+  df_pre_earnings %>% 
+  inner_join(df_stock_returns %>% 
+               select(Symbol, TradeDate, ret_2),
+             c("symbol" = "Symbol", "m3_biz" = "TradeDate"))
+
+df_pre_analysis <-
+  cbind(df_m2,df_m3$ret_3, df_m5$ret_5, df_m7$ret_7, df_m10$ret_10)
+
+names(df_pre_analysis)[13] <- "ret_3"
+names(df_pre_analysis)[14] <- "ret_5"
+names(df_pre_analysis)[15] <- "ret_7"
+names(df_pre_analysis)[16] <- "ret_10"
+
+df_pre_analysis <-
+  df_pre_analysis %>%
+  select(symbol
+         , earnings_date
+         , expected_move
+         , actual_move
+         , abs_actual_move
+         , move_ratio
+         , ret_2
+         , ret_3
+         , ret_5
+         , ret_7
+         , ret_10)
+
+# df_pre_analysis %>% write_csv("pre_earings_returns.csv")
