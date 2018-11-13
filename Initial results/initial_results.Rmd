@@ -180,6 +180,7 @@ df_post_earnings<-
 ```
 
 
+
 ```{r returns graphs, echo = FALSE, fig.align='center'}
 df_pre_returns %>% 
   filter(ret_2 < 1) %>% 
@@ -213,7 +214,10 @@ df_post_earnings %>%
        title = "Post Earnings Volaility split Lead-up Gain/Loss")
 ```
 
-<!--why did include post vol vs pre returns-->
+<!--Here if you noticed we opted to not include a graph of post earnings vol vs pre earnings returns
+    The graph is basically a scatter plot with no correlations, and I could not find a way to make the
+    data anything but a blob on the graph. Also we figured it told us the exact same thing as the returns vs move ratio.
+    The graph i made i located in the pre earnings graphs R file if you want to see it.-->
 
 ###**Price Volatility Before Earnings**
 <!--feed in pre earnings volatility data-->
