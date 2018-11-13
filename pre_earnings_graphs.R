@@ -125,7 +125,9 @@ df_pre_returns %>%
   ))+
   geom_smooth(mapping = aes(
     x = move_ratio_bucket, y = avg_ret_2
-  ), se = F)
+  ), se = F, method = "lm")+
+  labs(x = "Move Ratio Rank", y = "Average 2 Day Returns",
+       title = "Move Ratio Rank against Lead-up Returns")
 
 #split by gain loss on earnings day
 df_pre_returns %>% 
@@ -158,8 +160,11 @@ df_comparison %>%
 df_comparison %>% 
   ggplot()+ geom_point(mapping = aes(
     x = log(sd_03/expected_move), y = ret_3/expected_move
-  ))
-
+  ))+
+  labs(x = "Post SD 3", y = "Lead up returns 3", 
+       title = "Lead up returns vs post SD")
+#not including this graph because it there was no way to make it relativley readable
+#and it says the same thing as returns vs MR
 
 # post earnings split by pre move -----------------------------------------
 

@@ -4,9 +4,9 @@ subtitle: "Volatility Around Earnings"
 author: "Jacob Baier"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 <!--load packages-->
 ```{r setup, include=FALSE}
@@ -155,11 +155,65 @@ df_post_earnings %>%
 
 ###**Positive and Negative Stock Performce Before Earnings**
 <!--feed in pre earnings returns data-->
-```{r pre earnings return, include= FALSE}
+```{r pre earnings returns data, include= FALSE}
+df_pre_returns <- read_csv("pre_earings_returns.csv")
+
+df_pre_returns <-
+  df_pre_returns %>% 
+  filter(expected_move > 0.01) %>% 
+  filter(move_ratio > 0.01) %>% 
+  mutate(gain_loss = map_chr(actual_move,
+                             function(move) if(move < 0) {"loss"} else {"gain"})) %>% 
+  mutate(move_ratio_bucket = cut(log(move_ratio), 100, labels = FALSE))
+
+df_pre_returns<-
+  df_pre_returns %>% 
+  mutate(leadup_move = map_chr(ret_3, 
+                               function(move) if(move<0){"loss"}else{"gain"}))
+
+df_post_earnings<-
+  df_post_earnings %>% 
+  inner_join(df_pre_returns %>% select(
+                                symbol, earnings_date, leadup_move
+                                )
+             , c("earnings_date"= "earnings_date", "symbol" = "symbol"))
+```
+
+
+```{r returns graphs, echo = FALSE, fig.align='center'}
+df_pre_returns %>% 
+  filter(ret_2 < 1) %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarise(avg_ret_2 = mean(ret_2/expected_move)) %>% 
+  ggplot()+ geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_2
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_2
+  ), se = F, method = "lm")+
+  labs(x = "Move Ratio Rank", y = "Average 2 Day Returns",
+       title = "Move Ratio Rank against Lead-up Returns")
 
 ```
 
-*section placeholder*
+
+```{r post vol and leadup move direction, echo=FALSE, fig.align='center'}
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, leadup_move) %>% 
+  summarize(avg_sd_05_ratio = log(mean(sd_05/expected_move))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_05_ratio, color = leadup_move),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_05_ratio), method = "lm",
+              se = F) +
+  facet_wrap(~ leadup_move, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. 5", 
+       title = "Post Earnings Volaility split Lead-up Gain/Loss")
+```
+
+<!--why did include post vol vs pre returns-->
 
 ###**Price Volatility Before Earnings**
 <!--feed in pre earnings volatility data-->
@@ -248,7 +302,96 @@ df_post_earnings %>%
   labs(x = "Move Ratio Rank", y = "Average S.D 10")
 ###--------------------------------------
 #pre earnings returns
+df_pre_returns %>% 
+  filter(ret_2 < 1) %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarise(avg_ret_3 = mean(ret_3/expected_move)) %>% 
+  ggplot()+ geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_3
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_3
+  ), se = F, method = "lm")+
+  labs(x = "Move Ratio Rank", y = "Average 3 Day Returns",
+       title = "Move Ratio Rank against Lead-up Returns")
 
+df_pre_returns %>% 
+  filter(ret_2 < 1) %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarise(avg_ret_5 = mean(ret_5/expected_move)) %>% 
+  ggplot()+ geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_5
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_5
+  ), se = F, method = "lm")+
+  labs(x = "Move Ratio Rank", y = "Average 5 Day Returns")
+
+df_pre_returns %>% 
+  filter(ret_2 < 1) %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarise(avg_ret_7 = mean(ret_7/expected_move)) %>% 
+  ggplot()+ geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_7
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_7
+  ), se = F, method = "lm")+
+  labs(x = "Move Ratio Rank", y = "Average 7 Day Returns")
+
+df_pre_returns %>% 
+  filter(ret_2 < 1) %>% 
+  group_by(move_ratio_bucket) %>% 
+  summarise(avg_ret_10 = mean(ret_10/expected_move)) %>% 
+  ggplot()+ geom_point(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_10
+  ))+
+  geom_smooth(mapping = aes(
+    x = move_ratio_bucket, y = avg_ret_10
+  ), se = F, method = "lm")+
+  labs(x = "Move Ratio Rank", y = "Average 10 Day Returns")
+
+###--------------------------------------
+#gain/loss split 
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, leadup_move) %>% 
+  summarize(avg_sd_03_ratio = log(mean(sd_03/expected_move))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_03_ratio, color = leadup_move),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_03_ratio), method = "lm",
+              se = F) +
+  facet_wrap(~ leadup_move, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. 3", 
+       title = "Post Earnings Volaility split Lead-up Gain/Loss")
+
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, leadup_move) %>% 
+  summarize(avg_sd_07_ratio = log(mean(sd_07/expected_move))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_07_ratio, color = leadup_move),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_07_ratio), method = "lm",
+              se = F) +
+  facet_wrap(~ leadup_move, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. 7")
+
+df_post_earnings %>% 
+  group_by(move_ratio_bucket, leadup_move) %>% 
+  summarize(avg_sd_10_ratio = log(mean(sd_10/expected_move))
+            ,num_obs = n()) %>% 
+  filter(num_obs > 50) %>% 
+  ggplot() + geom_point(mapping = aes(x = move_ratio_bucket, 
+                                      y = avg_sd_10_ratio, color = leadup_move),
+                        show.legend = F) +
+  geom_smooth(mapping = aes(x = move_ratio_bucket, y = avg_sd_10_ratio), method = "lm",
+              se = F) +
+  facet_wrap(~ leadup_move, ncol = 1)+
+  labs(x = "Move Ratio Rank", y = "Average S.D. 10")
 
 ###--------------------------------------
 # pre earnings vol graphs
